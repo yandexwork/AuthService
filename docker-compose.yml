@@ -2,6 +2,19 @@ version: '3.9'
 
 services:
 
+  api:
+    build: .
+    container_name: auth-api
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - auth_network
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+
   redis:
     image: redis:7.0.10
     container_name: auth-redis
