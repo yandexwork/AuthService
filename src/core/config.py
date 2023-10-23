@@ -1,8 +1,10 @@
-from pydantic import BaseModel
+from pydantic_settings import BaseSettings
+from pydantic import Field
 
 
-class DbSettings(BaseModel):
-    DB_URL: str = f"postgresql+asyncpg://app:123qwe@localhost:5432/postgres"
+class Setting(BaseSettings):
+    DB_URL: str
 
 
-settings = DbSettings()
+settings = Setting()
+
