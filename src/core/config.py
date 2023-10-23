@@ -7,3 +7,4 @@ class Setting(BaseSettings):
 
 
 settings = Setting()
+
