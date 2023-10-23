@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, status
 from fastapi.encoders import jsonable_encoder
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.users import User
-from schemas.users import UserInDB, UserCreate
-from db.postgres import get_session
+from src.models.users import User
+from src.schemas.users import UserInDB, UserCreate
+from src.db.postgres import get_session
 
 
 router = APIRouter()

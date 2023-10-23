@@ -6,3 +6,5 @@ werkzeug==3.0.0
 pydantic_settings==2.0.3
 asyncpg==0.28.0
 uvicorn==0.23.2
+alembic
+orjson

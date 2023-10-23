@@ -4,10 +4,10 @@ from pydantic import BaseModel
 
 
 class UserCreate(BaseModel):
-    login: str
-    password: str
-    first_name: str
-    last_name: str
+    login: str = 'testuser'
+    password: str = 'qwerty12345'
+    first_name: str = 'bob'
+    last_name: str = 'smith'
 
 
 class UserInDB(BaseModel):
