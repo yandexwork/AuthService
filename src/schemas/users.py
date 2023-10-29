@@ -12,3 +12,8 @@ class UserCreateForm(BaseModel):
         if len(v) < 8:
             raise ValueError('Пароль должен содержать не менее 8 символов')
         return v
+
+
+class UserLoginForm(BaseModel):
+    login: str = "unidentified"
+    password: str = "qwerty12345"
