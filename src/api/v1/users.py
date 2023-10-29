@@ -1,20 +1,22 @@
 from fastapi import APIRouter, Depends, status
-from fastapi.encoders import jsonable_encoder
-from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.responses import JSONResponse
 
-from src.models.users import User
-from src.schemas.users import UserInDB, UserCreate
-from src.db.postgres import get_session
+from src.schemas.users import UserCreateForm
+from src.services.users import UserService, get_user_service
 
 
 router = APIRouter()
 
 
-@router.post('/signup', response_model=UserInDB, status_code=status.HTTP_201_CREATED)
-async def create_user(user_create: UserCreate, db: AsyncSession = Depends(get_session)) -> UserInDB:
-    user_dto = jsonable_encoder(user_create)
-    user = User(**user_dto)
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
-    return user
+@router.post('/signup')
+async def create_user(
+        user_create_form: UserCreateForm,
+        user_service: UserService = Depends(get_user_service)
+):
+    if not await user_service.is_user_exist(user_create_form):
+        user = await user_service.create_user(user_create_form)
+        return user
+    return JSONResponse(
+        content="Login is already taken",
+        status_code=status.HTTP_502_BAD_GATEWAY
+    )

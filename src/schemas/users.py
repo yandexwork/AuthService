@@ -1,19 +1,14 @@
-from uuid import UUID
-
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
-class UserCreate(BaseModel):
+class UserCreateForm(BaseModel):
     login: str = 'testuser'
     password: str = 'qwerty12345'
     first_name: str = 'bob'
     last_name: str = 'smith'
 
-
-class UserInDB(BaseModel):
-    id: UUID
-    first_name: str
-    last_name: str
-
-    class Config:
-        orm_mode = True
+    @validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise ValueError('Пароль должен содержать не менее 8 символов')
+        return v
