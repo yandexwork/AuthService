@@ -2,7 +2,6 @@ from datetime import timedelta, datetime
 from functools import lru_cache
 from http import HTTPStatus
 from uuid import UUID
-from logging import Logger
 
 from async_fastapi_jwt_auth import AuthJWT
 from async_fastapi_jwt_auth.exceptions import MissingTokenError, JWTDecodeError
@@ -10,12 +9,11 @@ from fastapi import Depends, Response, Request
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from werkzeug.security import generate_password_hash
 
 from src.core.exceptions import CustomException, ErrorMessagesUtil
 from src.core.config import settings, auth_jwt_settings
 from src.db.postgres import get_session
-from src.db.redis import get_redis
+from src.db.redis_db import get_redis
 from src.models.history import LoginHistory
 from src.models.tokens import RefreshTokens
 from src.models.users import User
@@ -85,11 +83,10 @@ async def user_from_refresh(
 
 class TokenService:
     def __init__(self, db: AsyncSession, redis: Redis,
-                 authorize: AuthJWT, logger: Logger):
+                 authorize: AuthJWT):
         self.db = db
         self.redis = redis
         self.authorize = authorize
-        self.logger = logger
 
     async def get_user_by_login(self, login: str) -> User:
         sql_request = await self.db.execute(select(User).where(User.login == login))
@@ -98,7 +95,6 @@ class TokenService:
             raise CustomException(
                 status_code=HTTPStatus.BAD_REQUEST, message=ErrorMessagesUtil.user_not_found()
             )
-        self.logger.debug(f'Get user by login - input: [login: {login}]; output: [user_id: {user.id}];')
         return user
 
     async def login(self, login: str, password: str, request: Request, response: Response) -> Tokens:
@@ -114,9 +110,6 @@ class TokenService:
         await self.save_entry_information(user.id, request.headers['user-agent'])
         await self.set_tokens_to_cookie(response, tokens)
 
-        self.logger.debug(f'Login - input: [login: {login},'
-                          f'password: {generate_password_hash(password)}]; '
-                          f'output: [tokens: {tokens}];')
         return tokens
 
     async def refresh(self, user: User, request: Request, response: Response):
@@ -125,8 +118,6 @@ class TokenService:
         if await self.is_refresh_token_exist(user.id, refresh_token_cookie):
             access_token = await self.create_access_token(user.id)
             await self.set_access_token_to_cookie(response, access_token.access_token)
-            self.logger.debug(f'Refresh - input: [user_id: {user.id}]; '
-                              f'output: [access_token: {access_token}];')
             return access_token
 
         raise CustomException(
@@ -139,8 +130,6 @@ class TokenService:
             subject=str(user_id),
             expires_time=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE)
         )
-        self.logger.debug(f'Create access token - input: [user_id: {user_id}]; '
-                          f'output: [access_token: {access_token}];')
         return AccessToken(access_token=access_token)
 
     async def create_tokens(self, user_id: UUID) -> Tokens:
@@ -151,10 +140,6 @@ class TokenService:
             subject=str(user_id),
             expires_time=timedelta(minutes=settings.REFRESH_TOKEN_EXPIRE)
         )
-
-        self.logger.debug(f'Create tokens - input: [user_id: {user_id}]; '
-                          f'output: [access_token: {access_token}, '
-                          f'refresh_token: {refresh_token}];')
         return Tokens(
             access_token=access_token.access_token,
             refresh_token=refresh_token
@@ -165,8 +150,6 @@ class TokenService:
             user_id=user_id,
             refresh_token=refresh_token
         )
-        self.logger.debug(f'Save refresh token - input: [user_id: {user_id}, '
-                          f'refresh_token: {refresh_token}];')
         self.db.add(refresh_token_entry)
         await self.db.commit()
 
@@ -175,8 +158,6 @@ class TokenService:
             user_id=user_id,
             user_agent=user_agent
         )
-        self.logger.debug(f'Save entry information - input: [user_id: {user_id}, '
-                          f'user_agent: {user_agent}];')
         self.db.add(login_history)
         await self.db.commit()
 
@@ -200,9 +181,6 @@ class TokenService:
                 RefreshTokens.user_id == user_id
             ).filter(RefreshTokens.refresh_token == refresh_token))
         refresh_token_in_db = sql_request.scalar()
-        self.logger.debug(f'Is refresh token exist - input: ['
-                          f'user_id: {user_id}, refresh_token: {refresh_token}]; '
-                          f'output: [flag: {bool(refresh_token_in_db)}];')
 
         if not refresh_token_in_db:
             return False
@@ -222,4 +200,4 @@ def get_token_service(
         redis: Redis = Depends(get_redis),
         authorize: AuthJWT = Depends(),
 ) -> TokenService:
-    return TokenService(db, redis, authorize, logger)
+    return TokenService(db, redis, authorize)
