@@ -15,7 +15,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - /Users/Danya/PycharmProjects/AuthService:/app
+      - YOUR_PATH_TO_PROJECT:/app
 
   redis:
     image: redis:7.0.10
