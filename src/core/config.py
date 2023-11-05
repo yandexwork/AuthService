@@ -12,6 +12,10 @@ class AuthJWTSettings(BaseSettings):
 
 class Setting(BaseSettings):
     DB_URL: str
+    REDIS_HOST: str
+    REDIS_PORT: str
+    ACCESS_TOKEN_EXPIRE: int
+    REFRESH_TOKEN_EXPIRE: int
 
 
 @AuthJWT.load_config
