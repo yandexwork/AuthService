@@ -1,11 +1,20 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Column, DateTime, String, Table, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from src.db.postgres import Base
+
+
+UserRoles = Table(
+    'user_roles',
+    Base.metadata,
+    Column('user_id', ForeignKey('users.id')),
+    Column('role_id', ForeignKey('roles.id'))
+)
 
 
 class User(Base):
