@@ -10,51 +10,35 @@ from sqlalchemy.engine.result import Result
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
-from src.core.exceptions import CustomException, ErrorMessagesUtil
+from src.core.exceptions import USER_ALREADY_EXIST, WRONG_PASSWORD
 from src.schemas.users import UserCreateForm, ChangePasswordForm, FullUserSchema
 from src.schemas.histories import LoginHistorySchema
 from src.schemas.validators import Paginator
 from src.models.users import User
 from src.models.history import LoginHistory
 from src.db.postgres import get_session
+from src.services.common import BaseService
 
 
-class UserService:
-    user_already_exist_exception = CustomException(
-        status_code=HTTPStatus.CONFLICT,
-        message=ErrorMessagesUtil.user_already_exists()
-    )
-
-    wrong_password_exception = CustomException(
-        status_code=HTTPStatus.BAD_REQUEST,
-        message=ErrorMessagesUtil.wrong_password()
-    )
-
-    def __init__(self, db: AsyncSession):
-        self.db = db
-
-    async def update_user(self, user: User) -> None:
-        self.db.add(user)
-        await self.db.commit()
-        await self.db.refresh(user)
+class UserService(BaseService):
 
     async def create_user(self, user_create_form: UserCreateForm) -> User:
         try:
             # DTO - data transfer object
             user_dto = jsonable_encoder(user_create_form)
             user = User(**user_dto)
-            await self.update_user(user)
+            await self.update_model_object(user)
             return user
         except IntegrityError:
-            raise self.user_already_exist_exception
+            raise USER_ALREADY_EXIST
 
     async def change_user_password(
             self, user: User, change_password_form: ChangePasswordForm
     ) -> None:
         if not user.check_password(change_password_form.previous_password):
-            raise self.wrong_password_exception
+            raise WRONG_PASSWORD
         user.password = generate_password_hash(change_password_form.new_password)
-        await self.update_user(user)
+        await self.update_model_object(user)
 
     async def get_login_history_query(
             self, user_id: UUID, page_number: int, page_size: int

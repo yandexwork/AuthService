@@ -5,7 +5,10 @@ from fastapi import APIRouter, Response, Request, Depends
 from src.models.users import User
 from src.schemas.tokens import Tokens, AccessToken
 from src.schemas.users import UserLoginForm
-from src.services.auth import TokenService, get_token_service, user_from_refresh, user_from_access
+
+from src.services.auth import get_user_from_access_token, get_user_from_refresh_token
+from src.services.tokens import TokenService, get_token_service
+
 
 router = APIRouter()
 
@@ -32,7 +35,7 @@ async def get_tokens(
 async def refresh_access_token(
         response: Response,
         request: Request,
-        user: User = Depends(user_from_refresh),
+        user: User = Depends(get_user_from_refresh_token),
         token_service: TokenService = Depends(get_token_service)
 ) -> AccessToken:
     """Обновление access токена"""
@@ -44,7 +47,7 @@ async def refresh_access_token(
     status_code=HTTPStatus.NO_CONTENT
 )
 async def logout_from_all_devices(
-        user: User = Depends(user_from_access),
+        user: User = Depends(get_user_from_access_token),
         token_service: TokenService = Depends(get_token_service)
 ) -> None:
     """Выход из аккаунта со всех устройств"""
