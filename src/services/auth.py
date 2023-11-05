@@ -27,7 +27,7 @@ async def user_from_access(
 ) -> User:
     try:
         await authorize.jwt_required()
-    except (MissingTokenError, JWTDecodeError):
+    except (MissingTokenError, JWTDecodeError, AttributeError):
         raise CustomException(
             status_code=HTTPStatus.UNAUTHORIZED,
             message=ErrorMessagesUtil.user_not_authorized()
@@ -36,6 +36,12 @@ async def user_from_access(
     user_id = await authorize.get_jwt_subject()
     data = await db.execute(select(User).where(User.id == user_id))
     user: User = data.scalar()
+
+    if not user:
+        raise CustomException(
+            status_code=HTTPStatus.UNAUTHORIZED,
+            message=ErrorMessagesUtil.user_not_authorized()
+        )
 
     logout_time = await redis.get(str(user.id))
     if logout_time:
