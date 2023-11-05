@@ -1,5 +1,4 @@
 from functools import lru_cache
-from http import HTTPStatus
 from uuid import UUID
 
 from fastapi import Depends
