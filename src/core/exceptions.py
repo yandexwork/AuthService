@@ -34,6 +34,10 @@ class ErrorMessagesUtil:
     def wrong_password():
         return f"Wrong password given."
 
+    @staticmethod
+    def password_is_weak():
+        return f"Password is weak."
+
     # Токены
 
     @staticmethod
