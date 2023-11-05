@@ -5,6 +5,7 @@ from uuid import UUID
 from fastapi import Response, Request, Depends
 from async_fastapi_jwt_auth import AuthJWT
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.engine.result import Result
 from sqlalchemy import select, delete
 from redis.asyncio.client import Redis
 
@@ -12,7 +13,7 @@ from src.models.users import User
 from src.models.history import LoginHistory
 from src.models.tokens import RefreshTokens
 from src.schemas.tokens import Tokens, AccessToken
-from src.db.postgres import get_session, Base
+from src.db.postgres import get_session
 from src.db.redis_db import get_redis
 from src.core.exceptions import WRONG_PASSWORD, REFRESH_TOKEN_IS_INVALID, USER_NOT_FOUND
 from src.core.config import settings, auth_jwt_settings
@@ -98,16 +99,17 @@ class TokenService(BaseService):
                             settings.REFRESH_TOKEN_EXPIRE,
                             '/', None, False, True, 'lax')
 
-    async def is_refresh_token_exist(self, user_id: UUID, refresh_token: str) -> bool:
-        sql_request = await self.db.execute(
+    async def get_refresh_token_query(self, user_id: UUID, refresh_token: str) -> Result:
+        query = await self.db.execute(
             select(RefreshTokens).where(
                 RefreshTokens.user_id == user_id
             ).filter(RefreshTokens.refresh_token == refresh_token))
-        refresh_token_in_db = sql_request.scalar()
+        return query
 
-        if not refresh_token_in_db:
-            return False
-        return True
+    async def is_refresh_token_exist(self, user_id: UUID, refresh_token: str) -> bool:
+        query = await self.get_refresh_token_query(user_id, refresh_token)
+        refresh_token = query.scalar()
+        return True if refresh_token else False
 
     async def delete_refresh_token_by_user_id(self, user_id: UUID):
         await self.db.execute(delete(RefreshTokens).where(RefreshTokens.user_id == user_id))
