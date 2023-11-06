@@ -14,9 +14,28 @@ from src.schemas.users import UserCreateForm, ChangePasswordForm, FullUserSchema
 from src.schemas.histories import LoginHistorySchema
 from src.schemas.validators import Paginator
 from src.models.users import User
+from src.models.roles import Role
 from src.models.history import LoginHistory
-from src.db.postgres import get_session
+from src.db.postgres import get_session, async_session
 from src.services.common import BaseService
+
+
+async def create_admin():
+    try:
+        db = async_session()
+        admin = User(
+            login="admin",
+            password="admin",
+            first_name="admin",
+            last_name="admin"
+        )
+        role = Role(name='admin')
+        admin.roles.append(role)
+        db.add(admin)
+        await db.commit()
+        await db.close()
+    except IntegrityError:
+        pass
 
 
 class UserService(BaseService):
