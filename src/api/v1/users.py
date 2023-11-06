@@ -23,7 +23,7 @@ async def create_user(
 
 
 @router.put(
-    '/change-password',
+    '/change_password',
     status_code=HTTPStatus.NO_CONTENT
 )
 async def change_password(
@@ -35,7 +35,7 @@ async def change_password(
 
 
 @router.get(
-    '/get-user-history',
+    '/get_user_history',
     status_code=HTTPStatus.OK,
     response_model=list[LoginHistorySchema]
 )

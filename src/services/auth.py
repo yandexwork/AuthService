@@ -27,13 +27,6 @@ class AuthService(BaseService):
             raise USER_NOT_FOUND
         return user_id
 
-    async def get_user_by_id(self, user_id: UUID) -> User:
-        query = await self.db.execute(select(User).where(User.id == user_id))
-        user: User = query.scalar()
-        if not user:
-            raise USER_NOT_FOUND
-        return user
-
     async def is_token_created_before_logout(self, user: User) -> bool:
         logout_time = await self.redis.get(str(user.id))
         if logout_time:

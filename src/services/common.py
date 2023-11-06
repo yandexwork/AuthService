@@ -1,6 +1,11 @@
+from uuid import UUID
+
 from async_fastapi_jwt_auth import AuthJWT
 from sqlalchemy.ext.asyncio import AsyncSession
 from redis.asyncio.client import Redis
+
+from src.core.exceptions import USER_NOT_FOUND
+from src.models.users import User
 
 
 class BaseService:
@@ -17,3 +22,10 @@ class BaseService:
         self.db.add(model_object)
         await self.db.commit()
         await self.db.refresh(model_object)
+
+    async def get_user_by_id(self, user_id: UUID) -> User:
+        user: User = await self.db.get(User, user_id)
+        if not user:
+            raise USER_NOT_FOUND
+        return user
+
