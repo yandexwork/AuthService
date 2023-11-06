@@ -7,6 +7,7 @@ from sqlalchemy.orm import relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from src.db.postgres import Base
+from src.models.roles import Role
 
 
 UserRoles = Table(
@@ -25,6 +26,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
     first_name = Column(String(50))
     last_name = Column(String(50))
+    roles = relationship(Role, secondary=UserRoles, backref='users', lazy='selectin')
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __init__(self, login: str, password: str, first_name: str, last_name: str) -> None:
@@ -35,6 +37,12 @@ class User(Base):
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
+
+    def is_admin(self):
+        for role in self.roles:
+            if role.name == 'admin':
+                return True
+        return False
 
     def __repr__(self) -> str:
         return f'<User {self.login}>'

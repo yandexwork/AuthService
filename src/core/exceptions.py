@@ -27,6 +27,10 @@ class ErrorMessagesUtil:
     def user_does_not_exist():
         return f"User does not exist"
 
+    @staticmethod
+    def user_does_not_have_rights():
+        return f"User does not have rights for that action"
+
     # Пользователи
 
     @staticmethod
@@ -92,4 +96,19 @@ REFRESH_TOKEN_IS_INVALID = CustomException(
 USER_ALREADY_EXIST = CustomException(
     status_code=HTTPStatus.CONFLICT,
     message=ErrorMessagesUtil.user_already_exists()
+)
+
+ROLE_NOT_FOUND = CustomException(
+    status_code=HTTPStatus.BAD_REQUEST,
+    message=ErrorMessagesUtil.role_not_found()
+)
+
+USER_DOES_NOT_HAVE_RIGHTS = CustomException(
+    status_code=HTTPStatus.FORBIDDEN,
+    message=ErrorMessagesUtil.user_does_not_have_rights()
+)
+
+USER_DOES_NOT_HAVE_ROLE = CustomException(
+    status_code=HTTPStatus.NOT_FOUND,
+    message=ErrorMessagesUtil.user_doesnt_have_this_role()
 )
