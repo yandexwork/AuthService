@@ -5,11 +5,14 @@ from fastapi import APIRouter, Depends
 
 from src.models.users import User
 from src.models.roles import Role
-from src.core.exceptions import USER_DOES_NOT_HAVE_RIGHTS
-from src.schemas.roles import RoleCreateForm, RoleSchema, RoleAttachForm, RoleUpdateForm
+
 from src.schemas.validators import Paginator
+from src.schemas.roles import RoleCreateForm, RoleSchema, RoleAttachForm, RoleUpdateForm
+
 from src.services.auth import get_user_from_access_token
 from src.services.roles import RolesService, get_role_service
+
+from src.core.exceptions import USER_DOES_NOT_HAVE_RIGHTS
 
 
 router = APIRouter()
