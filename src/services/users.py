@@ -9,13 +9,16 @@ from sqlalchemy.engine.result import Result
 from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash
 
-from src.core.exceptions import USER_ALREADY_EXIST, WRONG_PASSWORD
 from src.schemas.users import UserCreateForm, ChangePasswordForm, FullUserSchema
 from src.schemas.histories import LoginHistorySchema
 from src.schemas.validators import Paginator
+
 from src.models.users import User
 from src.models.roles import Role
 from src.models.history import LoginHistory
+
+from src.core.exceptions import USER_ALREADY_EXIST, WRONG_PASSWORD
+from src.core.config import admin_settings
 from src.db.postgres import get_session, async_session
 from src.services.common import BaseService
 
@@ -24,12 +27,12 @@ async def create_admin():
     try:
         db = async_session()
         admin = User(
-            login="admin",
-            password="admin",
-            first_name="admin",
-            last_name="admin"
+            login=admin_settings.ADMIN_LOGIN,
+            password=admin_settings.ADMIN_PASSWORD,
+            first_name=admin_settings.ADMIN_FIRST_NAME,
+            last_name=admin_settings.ADMIN_LAST_NAME
         )
-        role = Role(name='admin')
+        role = Role(name=admin_settings.ADMIN_ROLE_NAME)
         admin.roles.append(role)
         db.add(admin)
         await db.commit()

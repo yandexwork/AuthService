@@ -18,6 +18,14 @@ class Setting(BaseSettings):
     REFRESH_TOKEN_EXPIRE: int
 
 
+class AdminSettings(BaseSettings):
+    ADMIN_LOGIN: str
+    ADMIN_PASSWORD: str
+    ADMIN_FIRST_NAME: str
+    ADMIN_LAST_NAME: str
+    ADMIN_ROLE_NAME: str
+
+
 @AuthJWT.load_config
 def get_auth_settings() -> AuthJWTSettings:
     return AuthJWTSettings()
@@ -25,3 +33,4 @@ def get_auth_settings() -> AuthJWTSettings:
 
 settings = Setting()
 auth_jwt_settings = AuthJWTSettings()
+admin_settings = AdminSettings()

@@ -8,6 +8,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from src.db.postgres import Base
 from src.models.roles import Role
+from src.core.config import admin_settings
 
 
 UserRoles = Table(
@@ -40,7 +41,7 @@ class User(Base):
 
     def is_admin(self):
         for role in self.roles:
-            if role.name == 'admin':
+            if role.name == admin_settings.ADMIN_ROLE_NAME:
                 return True
         return False
 
