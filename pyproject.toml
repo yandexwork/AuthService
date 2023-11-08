@@ -2,7 +2,7 @@
 name = "authservice"
 version = "0.1.0"
 description = ""
-authors = ["Кирилл Петухов <test@mail.ru>"]
+authors = ["Кирилл Петухов <test@mail.ru>", "Калганов Данила"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
