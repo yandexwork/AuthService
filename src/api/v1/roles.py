@@ -26,6 +26,14 @@ async def get_roles(
     return await role_service.get_roles(paginator)
 
 
+@router.get('/user_roles/{user_id}', status_code=HTTPStatus.OK, response_model=list[RoleSchema])
+async def get_user_roles(
+        user_id: UUID,
+        role_service: RolesService = Depends(get_role_service)
+) -> list[RoleSchema]:
+    return await role_service.get_user_roles(user_id)
+
+
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=RoleSchema)
 async def create_role(
         role_create_form: RoleCreateForm,

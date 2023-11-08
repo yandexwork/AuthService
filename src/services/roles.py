@@ -24,6 +24,10 @@ class RolesService(BaseService):
         roles = await self.get_roles_from_query(query)
         return roles
 
+    async def get_user_roles(self, user_id: UUID) -> list[Role]:
+        user = await self.db.get(User, user_id)
+        return user.roles
+
     @staticmethod
     async def get_roles_from_query(query: Result) -> list[Role]:
         roles = [role for role in query.scalars().all()]

@@ -20,6 +20,17 @@ async def test_roles(test_client):
 
 
 @pytest.mark.asyncio
+async def test_user_roles(test_client):
+    async with async_session() as session:
+        sql_request = await session.execute(select(User).where(User.login == admin_settings.ADMIN_LOGIN))
+        user: User = sql_request.scalar()
+    response = await test_client.get(
+        f"/roles/user_roles/{user.id}"
+    )
+    assert response.status_code == 200
+
+
+@pytest.mark.asyncio
 async def test_roles_create(test_client):
     time.sleep(1)
     tokens_response = await test_client.post(
