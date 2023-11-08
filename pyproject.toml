@@ -19,7 +19,11 @@ greenlet = "^3.0.0"
 pydantic-settings = "2.0.2"
 orjson = "^3.9.9"
 async-fastapi-jwt-auth = "0.6.1"
+pytest = "6.2.5"
+pytest-asyncio = "0.19.0"
 
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
 
 [build-system]
 requires = ["poetry-core"]

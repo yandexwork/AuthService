@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from src.models.users import User
 from src.models.roles import Role
@@ -37,7 +37,7 @@ async def create_role(
     raise USER_DOES_NOT_HAVE_RIGHTS
 
 
-@router.delete('/{id}', status_code=HTTPStatus.NO_CONTENT)
+@router.delete('/{role_id}', status_code=HTTPStatus.NO_CONTENT)
 async def delete_role(
         role_id: UUID,
         user: User = Depends(get_user_from_access_token),
@@ -48,7 +48,7 @@ async def delete_role(
     raise USER_DOES_NOT_HAVE_RIGHTS
 
 
-@router.put('/{id}', response_model=RoleSchema, status_code=HTTPStatus.OK)
+@router.put('/{role_id}', response_model=RoleSchema, status_code=HTTPStatus.OK)
 async def update_role(
         role_id: UUID,
         role_update_form: RoleUpdateForm,
@@ -67,16 +67,18 @@ async def attach_role(
         role_service: RolesService = Depends(get_role_service)
 ) -> None:
     if user.is_admin():
-        await role_service.attach_role(role_attach_form)
+        return await role_service.attach_role(role_attach_form)
     raise USER_DOES_NOT_HAVE_RIGHTS
 
 
-@router.delete('/detach_role', status_code=HTTPStatus.NO_CONTENT)
+@router.delete('/detach_role/', status_code=HTTPStatus.NO_CONTENT)
 async def detach_role(
-        role_attach_form: RoleAttachForm,
+        user_id: UUID = Query(),
+        role_id: UUID = Query(),
         user: User = Depends(get_user_from_access_token),
         role_service: RolesService = Depends(get_role_service)
 ) -> None:
     if user.is_admin():
-        await role_service.detach_role(role_attach_form)
+        role_attach_form = RoleAttachForm(user_id=user_id, role_id=role_id)
+        return await role_service.detach_role(role_attach_form)
     raise USER_DOES_NOT_HAVE_RIGHTS

@@ -6,9 +6,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.engine.result import Result
 from fastapi.encoders import jsonable_encoder
+from sqlalchemy.exc import IntegrityError
 
 from src.db.postgres import get_session
-from src.core.exceptions import ROLE_NOT_FOUND, USER_DOES_NOT_HAVE_ROLE
+from src.core.exceptions import ROLE_NOT_FOUND, USER_DOES_NOT_HAVE_ROLE, ROLE_ALREADY_EXIST
 from src.models.roles import Role
 from src.models.users import User
 from src.schemas.roles import RoleCreateForm, RoleAttachForm, RoleUpdateForm
@@ -38,7 +39,10 @@ class RolesService(BaseService):
 
     async def create_role(self, role_create_form: RoleCreateForm) -> Role:
         role = Role(name=role_create_form.name)
-        await self.update_model_object(role)
+        try:
+            await self.update_model_object(role)
+        except IntegrityError:
+            raise ROLE_ALREADY_EXIST
         return role
 
     async def attach_role(self, role_attach_form: RoleAttachForm) -> None:

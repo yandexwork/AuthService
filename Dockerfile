@@ -9,6 +9,7 @@ COPY pyproject.toml pyproject.toml
 
 COPY start.sh start.sh
 COPY alembic.ini alembic.ini
+COPY conftest.py conftest.py
 COPY ./src ./src
 
 RUN poetry install --no-root --no-dev
