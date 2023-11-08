@@ -20,6 +20,10 @@ class ErrorMessagesUtil:
         return f"Role not found."
 
     @staticmethod
+    def role_already_exist():
+        return f"Role already exist"
+
+    @staticmethod
     def user_doesnt_have_this_role():
         return f"User does not have this role."
 
@@ -111,4 +115,9 @@ USER_DOES_NOT_HAVE_RIGHTS = CustomException(
 USER_DOES_NOT_HAVE_ROLE = CustomException(
     status_code=HTTPStatus.NOT_FOUND,
     message=ErrorMessagesUtil.user_doesnt_have_this_role()
+)
+
+ROLE_ALREADY_EXIST = CustomException(
+    status_code=HTTPStatus.CONFLICT,
+    message=ErrorMessagesUtil.role_already_exist()
 )
