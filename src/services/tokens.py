@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.engine.result import Result
 from sqlalchemy import select, delete
 from redis.asyncio.client import Redis
+from authlib.integrations.starlette_client import OAuthError
+
 
 from src.models.users import User
 from src.models.history import LoginHistory
@@ -15,8 +17,8 @@ from src.models.tokens import RefreshTokens
 from src.schemas.tokens import Tokens, AccessToken
 from src.db.postgres import get_session
 from src.db.redis_db import get_redis
-from src.core.exceptions import WRONG_PASSWORD, REFRESH_TOKEN_IS_INVALID, USER_NOT_FOUND
-from src.core.config import settings, auth_jwt_settings
+from src.core.exceptions import WRONG_PASSWORD, REFRESH_TOKEN_IS_INVALID, USER_NOT_FOUND, USER_NOT_AUTHORIZED
+from src.core.config import settings, auth_jwt_settings, oauth
 from src.services.common import BaseService
 
 
@@ -42,6 +44,22 @@ class TokenService(BaseService):
         await self.set_tokens_to_cookie(response, tokens)
 
         return tokens
+
+    async def google_login(self, request: Request, response: Response):
+        try:
+            access_token = await oauth.google.authorize_access_token(request)
+        except OAuthError:
+            raise USER_NOT_AUTHORIZED
+
+        # tokens = await self.create_tokens(user.id)
+        # await self.save_refresh_token(user.id, tokens.refresh_token)
+        # await self.save_entry_information(user.id, request.headers['user-agent'])
+        # await self.set_tokens_to_cookie(response, tokens)
+
+        return Tokens(
+            access_token=access_token,
+            refresh_token=access_token
+        )
 
     async def refresh(self, user: User, request: Request, response: Response):
         refresh_token_cookie = request.cookies[auth_jwt_settings.authjwt_refresh_cookie_key]
