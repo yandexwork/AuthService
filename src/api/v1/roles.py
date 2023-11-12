@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 
 from src.models.users import User
 from src.models.roles import Role
@@ -13,13 +13,16 @@ from src.services.auth import get_user_from_access_token
 from src.services.roles import RolesService, get_role_service
 
 from src.core.exceptions import USER_DOES_NOT_HAVE_RIGHTS
+from src.limiter import limiter
 
 
 router = APIRouter()
 
 
 @router.get('/', status_code=HTTPStatus.OK, response_model=list[RoleSchema])
+@limiter.limit("20/minute")
 async def get_roles(
+        request: Request,
         paginator: Paginator = Depends(Paginator),
         role_service: RolesService = Depends(get_role_service)
 ) -> list[RoleSchema]:
@@ -27,7 +30,9 @@ async def get_roles(
 
 
 @router.get('/user_roles/{user_id}', status_code=HTTPStatus.OK, response_model=list[RoleSchema])
+@limiter.limit("20/minute")
 async def get_user_roles(
+        request: Request,
         user_id: UUID,
         role_service: RolesService = Depends(get_role_service)
 ) -> list[RoleSchema]:
@@ -35,7 +40,9 @@ async def get_user_roles(
 
 
 @router.post('/', status_code=HTTPStatus.CREATED, response_model=RoleSchema)
+@limiter.limit("20/minute")
 async def create_role(
+        request: Request,
         role_create_form: RoleCreateForm,
         user: User = Depends(get_user_from_access_token),
         role_service: RolesService = Depends(get_role_service)
@@ -46,7 +53,9 @@ async def create_role(
 
 
 @router.delete('/{role_id}', status_code=HTTPStatus.NO_CONTENT)
+@limiter.limit("20/minute")
 async def delete_role(
+        request: Request,
         role_id: UUID,
         user: User = Depends(get_user_from_access_token),
         role_service: RolesService = Depends(get_role_service)
@@ -57,7 +66,9 @@ async def delete_role(
 
 
 @router.put('/{role_id}', response_model=RoleSchema, status_code=HTTPStatus.OK)
+@limiter.limit("20/minute")
 async def update_role(
+        request: Request,
         role_id: UUID,
         role_update_form: RoleUpdateForm,
         user: User = Depends(get_user_from_access_token),
@@ -69,7 +80,9 @@ async def update_role(
 
 
 @router.post('/attach_role', status_code=HTTPStatus.NO_CONTENT)
+@limiter.limit("20/minute")
 async def attach_role(
+        request: Request,
         role_attach_form: RoleAttachForm,
         user: User = Depends(get_user_from_access_token),
         role_service: RolesService = Depends(get_role_service)
@@ -80,7 +93,9 @@ async def attach_role(
 
 
 @router.delete('/detach_role/', status_code=HTTPStatus.NO_CONTENT)
+@limiter.limit("20/minute")
 async def detach_role(
+        request: Request,
         user_id: UUID = Query(),
         role_id: UUID = Query(),
         user: User = Depends(get_user_from_access_token),

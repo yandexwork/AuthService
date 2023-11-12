@@ -87,6 +87,7 @@ class UserService(BaseService):
     async def get_user_info(user: User) -> FullUserSchema:
         # DTO - data transfer object
         user_dto = jsonable_encoder(user)
+        user_dto['is_admin'] = user.is_admin()
         return FullUserSchema(**user_dto)
 
 

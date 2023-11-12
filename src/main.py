@@ -1,11 +1,16 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import ORJSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from starlette.middleware.sessions import SessionMiddleware
 
 from src.core.exceptions import CustomException
 from src.services.users import create_admin
+from src.limiter import limiter
 from src.api.v1 import users
 from src.api.v1 import auth
 from src.api.v1 import roles
+from src.core.config import auth_jwt_settings
 
 
 app = FastAPI(
@@ -14,6 +19,10 @@ app = FastAPI(
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SessionMiddleware, secret_key=auth_jwt_settings.authjwt_secret_key)
 
 
 @app.exception_handler(CustomException)

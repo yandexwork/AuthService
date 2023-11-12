@@ -1,5 +1,7 @@
 from async_fastapi_jwt_auth import AuthJWT
 from pydantic_settings import BaseSettings
+from authlib.integrations.starlette_client import OAuth
+from starlette.config import Config
 
 
 class AuthJWTSettings(BaseSettings):
@@ -24,6 +26,27 @@ class AdminSettings(BaseSettings):
     ADMIN_FIRST_NAME: str
     ADMIN_LAST_NAME: str
     ADMIN_ROLE_NAME: str
+
+
+class GoogleSettings(BaseSettings):
+    GOOGLE_CLIENT_ID: str
+    GOOGLE_CLIENT_SECRET: str
+
+
+google_settings = GoogleSettings()
+
+
+config_data = {
+    'GOOGLE_CLIENT_ID': google_settings.GOOGLE_CLIENT_ID,
+    'GOOGLE_CLIENT_SECRET': google_settings.GOOGLE_CLIENT_SECRET
+}
+starlette_config = Config(environ=config_data)
+oauth = OAuth(starlette_config)
+oauth.register(
+    name='google',
+    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+    client_kwargs={'scope': 'openid email profile'},
+)
 
 
 @AuthJWT.load_config

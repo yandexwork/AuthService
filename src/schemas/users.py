@@ -40,4 +40,5 @@ class FullUserSchema(BaseModel):
     first_name: str
     last_name: str
     created_at: datetime
+    is_admin: bool
 
