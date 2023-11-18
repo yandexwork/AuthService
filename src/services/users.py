@@ -104,6 +104,11 @@ class UserService(BaseService):
             await self.update_model_object(user)
         return user
 
+    async def delete_user(self, user_id: UUID) -> None:
+        user = await self.get_user_by_id(user_id)
+        await self.db.delete(user)
+        await self.db.commit()
+
 
 @lru_cache()
 def get_user_service(

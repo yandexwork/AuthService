@@ -1,6 +1,7 @@
 from http import HTTPStatus
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Query
 
 from src.models.users import User
 from src.services.users import UserService, get_user_service
@@ -9,6 +10,7 @@ from src.services.auth import get_user_from_access_token
 from src.schemas.users import UserCreateForm, ChangePasswordForm, FullUserSchema
 from src.schemas.histories import LoginHistorySchema
 from src.schemas.validators import Paginator
+from src.core.exceptions import USER_DOES_NOT_HAVE_RIGHTS
 from src.limiter import limiter
 
 
@@ -52,6 +54,19 @@ async def get_user_history(
         user_service: UserService = Depends(get_user_service)
 ) -> list[LoginHistorySchema]:
     return await user_service.get_user_history(user, paginator)
+
+
+@router.delete('/delete/', status_code=HTTPStatus.NO_CONTENT)
+@limiter.limit("20/minute")
+async def delete_user(
+        request: Request,
+        user_id: UUID = Query(),
+        user: User = Depends(get_user_from_access_token),
+        user_service: UserService = Depends(get_user_service)
+) -> None:
+    if user.is_admin():
+        return await user_service.delete_user(user_id)
+    raise USER_DOES_NOT_HAVE_RIGHTS
 
 
 @router.get(
