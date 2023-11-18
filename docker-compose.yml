@@ -13,7 +13,7 @@ services:
     env_file:
       - .env
     volumes:
-      - YOUR_PATH_TO_PROJECT:/app
+      - /Users/Danya/PycharmProjects/AuthService:/app
 
   redis:
     image: redis:7.0.10

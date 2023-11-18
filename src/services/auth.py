@@ -2,11 +2,14 @@ from uuid import UUID
 
 from async_fastapi_jwt_auth import AuthJWT
 from async_fastapi_jwt_auth.exceptions import MissingTokenError, JWTDecodeError
+from authlib.integrations.base_client.errors import MismatchingStateError
+from authlib.integrations.starlette_client import OAuth
+from starlette.requests import Request as StarletteRequest
 from fastapi import Depends
 from redis.asyncio.client import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
 
+from src.core.exceptions import OAUTH_ERROR
 from src.core.exceptions import USER_NOT_AUTHORIZED, USER_NOT_FOUND, ACCESS_TOKEN_IS_INVALID, REFRESH_TOKEN_IS_INVALID
 from src.db.postgres import get_session
 from src.db.redis_db import get_redis
@@ -75,3 +78,15 @@ async def get_user_from_refresh_token(
         authorize: AuthJWT = Depends()
 ) -> User:
     return await AuthService(db, redis, authorize).get_user_from_refresh()
+
+
+async def get_user_info_from_request(
+        request: StarletteRequest,
+        oauth_service: OAuth
+) -> dict:
+    try:
+        token = await oauth_service.authorize_access_token(request)
+    except MismatchingStateError:
+        raise OAUTH_ERROR
+    user_info = token['userinfo']
+    return user_info

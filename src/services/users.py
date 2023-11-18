@@ -90,6 +90,20 @@ class UserService(BaseService):
         user_dto['is_admin'] = user.is_admin()
         return FullUserSchema(**user_dto)
 
+    async def get_or_create_user(self, user_info: dict) -> User:
+        user_data = {
+            'login': user_info['email'],
+            'password': User.generate_strong_password(16),
+            'first_name': user_info['given_name'],
+            'last_name': user_info['family_name']
+        }
+        sql_request = await self.db.execute(select(User).where(User.login == user_data['login']))
+        user: User = sql_request.scalar()
+        if not user:
+            user = User(**user_data)
+            await self.update_model_object(user)
+        return user
+
 
 @lru_cache()
 def get_user_service(

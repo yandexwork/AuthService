@@ -1,4 +1,6 @@
 import uuid
+import random
+import string
 from datetime import datetime
 
 from sqlalchemy import Column, DateTime, String, Table, ForeignKey
@@ -32,12 +34,18 @@ class User(Base):
 
     def __init__(self, login: str, password: str, first_name: str, last_name: str) -> None:
         self.login = login
-        self.password = self.password = generate_password_hash(password)
+        self.password = generate_password_hash(password)
         self.first_name = first_name
         self.last_name = last_name
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password, password)
+
+    @staticmethod
+    def generate_strong_password(password_length):
+        characters = string.ascii_letters + string.digits + string.punctuation
+        password = ''.join(random.choice(characters) for _ in range(password_length))
+        return password
 
     def is_admin(self):
         for role in self.roles:
