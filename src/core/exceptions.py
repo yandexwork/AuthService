@@ -71,6 +71,10 @@ class ErrorMessagesUtil:
     def user_not_authorized():
         return f"User not authorized."
 
+    @staticmethod
+    def oauth_error():
+        return f"OAuth get an error"
+
 
 USER_NOT_AUTHORIZED = CustomException(
     status_code=HTTPStatus.UNAUTHORIZED,
@@ -120,4 +124,9 @@ USER_DOES_NOT_HAVE_ROLE = CustomException(
 ROLE_ALREADY_EXIST = CustomException(
     status_code=HTTPStatus.CONFLICT,
     message=ErrorMessagesUtil.role_already_exist()
+)
+
+OAUTH_ERROR = CustomException(
+    status_code=HTTPStatus.BAD_REQUEST,
+    message=ErrorMessagesUtil.oauth_error()
 )

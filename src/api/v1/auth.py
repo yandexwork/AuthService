@@ -1,6 +1,7 @@
 from http import HTTPStatus
 
 from fastapi import APIRouter, Response, Request, Depends
+from starlette.requests import Request as StarletteRequest
 
 from src.models.users import User
 from src.schemas.tokens import Tokens, AccessToken
@@ -8,6 +9,9 @@ from src.schemas.users import UserLoginForm
 
 from src.services.auth import get_user_from_access_token, get_user_from_refresh_token
 from src.services.tokens import TokenService, get_token_service
+from src.services.users import UserService, get_user_service
+from src.services.auth import get_user_info_from_request
+from src.core.config import oauth_services
 from src.limiter import limiter
 
 
@@ -29,16 +33,29 @@ async def get_tokens(
                                      request, response)
 
 
-@router.post('/login/google',
-             response_model=Tokens,
-             status_code=HTTPStatus.OK)
+@router.get("/oauth/{service}",
+            response_model=Tokens,
+            status_code=HTTPStatus.OK)
 @limiter.limit("20/minute")
-async def get_google_tokens(
-        response: Response,
-        request: Request,
+async def auth_via_service(
+        service: str,
+        request: StarletteRequest,
+        user_service: UserService = Depends(get_user_service),
         token_service: TokenService = Depends(get_token_service)
-) -> Tokens:
-    return await token_service.google_login(request, response)
+):
+    if service in oauth_services:
+        oauth_service = oauth_services[service]
+        user_info = await get_user_info_from_request(request, oauth_service)
+        user = await user_service.get_or_create_user(user_info)
+        tokens = await token_service.create_tokens(user.id)
+        return tokens
+
+
+@router.get("/login/google")
+@limiter.limit("20/minute")
+async def login_via_google(request: StarletteRequest):
+    redirect_uri = request.url_for('auth_via_service', service='google')
+    return await oauth_services['google'].authorize_redirect(request, redirect_uri)
 
 
 @router.post(
