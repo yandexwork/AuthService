@@ -18,6 +18,8 @@ class Setting(BaseSettings):
     REDIS_PORT: str
     ACCESS_TOKEN_EXPIRE: int
     REFRESH_TOKEN_EXPIRE: int
+    jaeger_agent_host_name: str
+    jaeger_agent_port: int
 
 
 class AdminSettings(BaseSettings):
