@@ -1,7 +1,9 @@
 # Сервис авторизации
 
 Сервис авторизации позволяет регистироваться и логиниться пользователям, обновлять токены, делать полный выход, логиниться с помощью OAuth, меня пароль для входа. Также реализован функционал по созданию и выдаче ролей.  
-Стек: Python, FastAPI, Postgres, Alembic, sqlalchemy, Redis, OAuth, Docker, Nginx.
+Стек: Python, FastAPI, Postgres, Alembic, sqlalchemy, Redis, OAuth, Docker, Nginx.  
+
+[Документация OpenAPI](http://localhost:80/api/openapi)
 
 ## Гайд по запуску:
 - заполнить env по env_example
